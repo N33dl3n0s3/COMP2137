@@ -6,4 +6,4 @@ hwinfo --cpu --short
 hwinfo --memory
 hwinfo --short --block
 hwinfo --network interface --short
-ip link
+
