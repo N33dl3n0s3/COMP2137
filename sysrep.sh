@@ -15,4 +15,15 @@ echo "Disk(s): $(lsblk -d -n -o VENDOR,MODEL,SIZE | grep ATA)"
 echo "Graphics: $(lshw -c display 2>/dev/null | sed -n '/product/s/^.*product: //p')"
 echo "Host Address:  $(ip a s enp0s3 | grep -w inet | awk '{print $2}')"
 # Continue editing here
-echo "Gateway Address: $(ip r)"
+echo "Gateway Address: $(ip r | grep default | awk '{print $3}')"
+echo "DNS Server: $(resolvectl status | grep -w Server | awk '{print $4}')"
+
+echo -e "\nSysyem Status\n-----------------"
+echo "Users Logged in:
+$(who)"
+echo "Disk Space:
+$(df -h | awk '{printf "%-20s %-10s\n", $1,$4}')"
+echo "Process Count: $(ps -e --no-headers | wc -l)"
+echo "Load Averages: $(uptime | awk '{print $9,$10,$11}')"
+echo "Listening Network Ports: $(ss -ltn | awk 'NR>1 {n=split($4, a, ":"); print a[n]}' | paste -sd ' ' -)"
+echo "UFW Status: $(sudo ufw status)"
