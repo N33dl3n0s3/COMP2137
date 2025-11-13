@@ -153,3 +153,77 @@ else
 		exit
 	fi
 fi
+
+# ==========================
+# User Management Variables:
+# ==========================
+
+userList=("dennis" "aubrey" "captain" "snibbles" "brownie" "scooter" "sandy" "perrier" "cindy" "tiger" "yoda")
+sudoUsers=("dennis")
+sudoersKey="ssh-ed25519 AAAAC3NzaC11ZDI1NTE5AAAAIG4rT3vTt990x5kndS4HmgTrKBT8SKzhK4rhGkEVG1CI student@generic-vm"
+keyAlgorithm=("rsa" "ed22519")"
+# ================
+# User Management:
+# ================
+
+echo "Beginning user provisioning"
+
+# -------------
+# Create Users:
+# -------------
+
+for userName in "${userList[@]}"; do
+	userHome="/home/$userName"
+	userSshDirectory="$userHome/.ssh"
+	userAuthKeys="$userSshDirectory/authorized_keys"
+
+	echo "Adding user account $userName"
+
+	if id -u "$userName" &>/dev/null; then
+		echo "The user, $userName already exists"
+	else
+		echo "Creating user: $userName"
+		if useradd -m -s /bin/bash "$userName"; then
+			echo "User $userName created successfully!"
+		else
+			echo "Failed to create user $userName"
+			continue
+		fi
+	fi
+
+# --------------
+# SSH key Setup:
+# --------------
+
+	if [ ! -d "$userSshDirectory" ]; then
+		mkdir -p "userSshDirectory"
+		chown "$userName:$userName" "userSshDirectory"
+		chmod 700 "$userSshDirectory"
+		echo "created $userSshDirectory"
+	fi
+	for keyType in "${keyAlgorithm[@]}"; do
+		keyDirectory="$userSshDirectory/id_$keyType"
+		if [ ! -f "$keyDirectory" ]; then
+			echo "creating $keyType key for $userName"
+			sudo -u "$userName" ssh-keygen -t "$keyType" -f "$keyDirectory" -N "" -q
+			echo "Generated $keyType key for $username"
+		else
+			echo "$keyType key already exists"
+		pubKey=$(cat "$keyDirectory.pub")
+		if ! grep -qF "$pubKey" "$userAuthKeys"; then
+			echo "$pubKey" >> "$userAuthKeys"
+			echo "Added generated $keyType key to $userAuthKeys."
+		fi
+	done
+	chown "$userName:$userName" "$userAuthKeys"
+	chmod 600 "$userAuthKeys"
+
+	if [[ " ${sudoUsers[@]} " =~ " ${userName} " ]]; then
+		echo "Adding $userName to sudo group"
+		if usermod -aG sudo "$userName" >/dev/null 2>&1; then
+			echo "$userName is now a member of the sudo group"
+		else
+			echo "failed to add $userName to sudo group"
+		fi
+	fi
+done
