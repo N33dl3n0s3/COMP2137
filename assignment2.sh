@@ -57,15 +57,15 @@ echo "Confirmed current address is $currentAddress on $targetNetwork network. " 
 # Testing function to modify a relocated safe copy of the netplan to be used if the script is ever modified
 # =========================================================================================================
 
-cp "$netplanFile" "$testnet"
-netplanFile="$testnet"
-echo "modifying $testnet"
+#cp "$netplanFile" "$testnet"
+#netplanFile="$testnet"
+#echo "modifying $testnet"
 
 # ======================================================================
 # Change the address only if it needs to be changed and if so, change it
 # ======================================================================
 
-if [ "currentAddress" == "$targetAddress" ]; then
+if [ "$currentAddress" = "$desitredAddress" ]; then
 	echo "The current configuration is correct. Moving on."
 else
 	echo "updating current address: $currentAddress to the desired address: $desiredAddress."
@@ -92,11 +92,11 @@ hostsChange="$desiredHostAddress\t$targetHost"
 # Copy and modify safe hosts file if script has been modified
 # ===========================================================
 
-hostsTest=~/hostsTest
-rm "$hostsTest" 2>/dev/null
-cp "$hostsFile" "$hostsTest"
-hostsFile="$hostsTest"
-echo "modifying $hostsFile"
+#hostsTest=~/hostsTest
+#rm "$hostsTest" 2>/dev/null
+#cp "$hostsFile" "$hostsTest"
+#hostsFile="$hostsTest"
+#echo "modifying $hostsFile"
 
 # ===============================
 # Change /etc/hosts configuration
@@ -150,7 +150,7 @@ else
 		echo "successfully installed ${installPackage[@]}"
 	else
 		echo "installation failed"
-		exit
+		exit 1
 	fi
 fi
 
@@ -161,12 +161,12 @@ fi
 userList=("dennis" "aubrey" "captain" "snibbles" "brownie" "scooter" "sandy" "perrier" "cindy" "tiger" "yoda")
 sudoUsers=("dennis")
 sudoersKey="ssh-ed25519 AAAAC3NzaC11ZDI1NTE5AAAAIG4rT3vTt990x5kndS4HmgTrKBT8SKzhK4rhGkEVG1CI student@generic-vm"
-keyAlgorithm=("rsa" "ed22519")"
+keyAlgorithm=("rsa" "ed25519")
 # ================
 # User Management:
 # ================
 
-echo "Beginning user provisioning"
+echo "Beginning user provisioning..."
 
 # -------------
 # Create Users:
@@ -196,8 +196,8 @@ for userName in "${userList[@]}"; do
 # --------------
 
 	if [ ! -d "$userSshDirectory" ]; then
-		mkdir -p "userSshDirectory"
-		chown "$userName:$userName" "userSshDirectory"
+		mkdir -p "$userSshDirectory"
+		chown "$userName:$userName" "$userSshDirectory"
 		chmod 700 "$userSshDirectory"
 		echo "created $userSshDirectory"
 	fi
@@ -206,9 +206,10 @@ for userName in "${userList[@]}"; do
 		if [ ! -f "$keyDirectory" ]; then
 			echo "creating $keyType key for $userName"
 			sudo -u "$userName" ssh-keygen -t "$keyType" -f "$keyDirectory" -N "" -q
-			echo "Generated $keyType key for $username"
+			echo "Generated $keyType key for $userName"
 		else
 			echo "$keyType key already exists"
+		fi
 		pubKey=$(cat "$keyDirectory.pub")
 		if ! grep -qF "$pubKey" "$userAuthKeys"; then
 			echo "$pubKey" >> "$userAuthKeys"
@@ -217,6 +218,10 @@ for userName in "${userList[@]}"; do
 	done
 	chown "$userName:$userName" "$userAuthKeys"
 	chmod 600 "$userAuthKeys"
+
+# ==========
+# Sudo Setup
+# ==========
 
 	if [[ " ${sudoUsers[@]} " =~ " ${userName} " ]]; then
 		echo "Adding $userName to sudo group"
