@@ -5,5 +5,6 @@
 hwinfo --cpu --short
 hwinfo --memory
 hwinfo --short --block
-hwinfo --network interface --short
-
+df -h
+hwinfo --network interface --short | grep Ethernet
+ip addr | grep enp0s3 | grep inet
