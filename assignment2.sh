@@ -204,6 +204,7 @@ for userName in "${userList[@]}"; do
 	for keyType in "${keyAlgorithm[@]}"; do
 		keyDirectory="$userSshDirectory/id_$keyType"
 		if [ ! -f "$keyDirectory" ]; then
+			mkdir -p "$userAuthKeys"
 			echo "creating $keyType key for $userName"
 			sudo -u "$userName" ssh-keygen -t "$keyType" -f "$keyDirectory" -N "" -q
 			echo "Generated $keyType key for $userName"
