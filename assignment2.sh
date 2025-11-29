@@ -65,7 +65,7 @@ echo "Confirmed current address is $currentAddress on $targetNetwork network. " 
 # Change the address only if it needs to be changed and if so, change it
 # ======================================================================
 
-if [ "$currentAddress" = "$desitredAddress" ]; then
+if [ "$currentAddress" = "$desiredAddress" ]; then
 	echo "The current configuration is correct. Moving on."
 else
 	echo "updating current address: $currentAddress to the desired address: $desiredAddress."
